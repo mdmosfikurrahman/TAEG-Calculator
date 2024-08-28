@@ -1,6 +1,6 @@
 package com.calculator.taeg.service.impl;
 
-import com.calculator.taeg.dto.CalculationTime;
+import com.calculator.taeg.dto.CalculationTimeResponse;
 import com.calculator.taeg.dto.LoanRequest;
 import com.calculator.taeg.dto.LoanResponse;
 import com.calculator.taeg.model.Loan;
@@ -32,10 +32,9 @@ public class TAEGServiceImpl implements TAEGService {
         loan.setTaeg(calculateTAEG(loan));
         loan.setCalculationTime(LocalDateTime.now());
         Loan savedLoan = loanRepository.save(loan);
-        LocalDateTime loanCalculationTime = savedLoan.getCalculationTime();
-        CalculationTime calculationTime = new CalculationTime(
-                loanCalculationTime.format(DATE_FORMATTER),
-                loanCalculationTime.format(TIME_FORMATTER)
+        CalculationTimeResponse calculationTimeResponse = new CalculationTimeResponse(
+                savedLoan.getCalculationTime().format(DATE_FORMATTER),
+                savedLoan.getCalculationTime().format(TIME_FORMATTER)
         );
 
         return new LoanResponse(
@@ -45,7 +44,7 @@ public class TAEGServiceImpl implements TAEGService {
                 savedLoan.getNumberOfPayments(),
                 savedLoan.getInsuranceCost(),
                 savedLoan.getTaeg(),
-                calculationTime
+                calculationTimeResponse
         );
     }
 
@@ -54,7 +53,7 @@ public class TAEGServiceImpl implements TAEGService {
         List<Loan> loans = loanRepository.findByLoanAmountBetween(minAmount, maxAmount);
 
         return loans.stream().map(loan -> {
-            CalculationTime calculationTime = new CalculationTime(
+            CalculationTimeResponse calculationTimeResponse = new CalculationTimeResponse(
                     loan.getCalculationTime().format(DATE_FORMATTER),
                     loan.getCalculationTime().format(TIME_FORMATTER)
             );
@@ -66,7 +65,7 @@ public class TAEGServiceImpl implements TAEGService {
                     loan.getNumberOfPayments(),
                     loan.getInsuranceCost(),
                     loan.getTaeg(),
-                    calculationTime
+                    calculationTimeResponse
             );
         }).toList();
     }

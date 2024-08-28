@@ -13,6 +13,6 @@ public class LoanResponse {
     private int numberOfPayments;
     private double insuranceCost;
     private double taeg;
-    private CalculationTime calculationTime;
+    private CalculationTimeResponse calculationTimeResponse;
 
 }

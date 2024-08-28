@@ -105,4 +105,4 @@ Once the application is running, you can use tools like Postman or `curl` to sen
 - **Response**: 
   - `loanId`: Long - The unique identifier for the loan.
   - `taeg`: double - The calculated Total Annual Effective Rate.
-  - `calculationTime`: LocalDateTime - The timestamp of the calculation.
+  - `calculationTimeResponse`: LocalDateTime - The timestamp of the calculation.

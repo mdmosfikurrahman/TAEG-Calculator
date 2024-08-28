@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CalculationTime {
+public class CalculationTimeResponse {
 
     private String date;
     private String time;
