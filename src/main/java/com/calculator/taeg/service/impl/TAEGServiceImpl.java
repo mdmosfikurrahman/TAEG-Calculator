@@ -1,5 +1,6 @@
 package com.calculator.taeg.service.impl;
 
+import com.calculator.taeg.dto.CalculationTime;
 import com.calculator.taeg.dto.LoanRequest;
 import com.calculator.taeg.dto.LoanResponse;
 import com.calculator.taeg.model.Loan;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,19 +19,62 @@ public class TAEGServiceImpl implements TAEGService {
 
     private final LoanRepository loanRepository;
 
-    public LoanResponse calculateTAEG(LoanRequest loanRequestDTO) {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM, yyyy");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm:ss a");
+
+    @Override
+    public LoanResponse calculateTAEG(LoanRequest loanRequest) {
         Loan loan = new Loan();
-        loan.setLoanAmount(loanRequestDTO.getLoanAmount());
-        loan.setInterestRate(loanRequestDTO.getInterestRate());
-        loan.setNumberOfPayments(loanRequestDTO.getNumberOfPayments());
-        loan.setInsuranceCost(loanRequestDTO.getInsuranceCost());
-
-        double taeg = (loan.getInterestRate() * loan.getNumberOfPayments()) / (loan.getLoanAmount() + loan.getInsuranceCost()) * 100;
-        loan.setTaeg(taeg);
+        loan.setLoanAmount(loanRequest.getLoanAmount());
+        loan.setInterestRate(loanRequest.getInterestRate());
+        loan.setNumberOfPayments(loanRequest.getNumberOfPayments());
+        loan.setInsuranceCost(loanRequest.getInsuranceCost());
+        loan.setTaeg(calculateTAEG(loan));
         loan.setCalculationTime(LocalDateTime.now());
-
         Loan savedLoan = loanRepository.save(loan);
+        LocalDateTime loanCalculationTime = savedLoan.getCalculationTime();
+        CalculationTime calculationTime = new CalculationTime(
+                loanCalculationTime.format(DATE_FORMATTER),
+                loanCalculationTime.format(TIME_FORMATTER)
+        );
 
-        return new LoanResponse(savedLoan.getId(), savedLoan.getTaeg(), savedLoan.getCalculationTime());
+        return new LoanResponse(
+                savedLoan.getId(),
+                savedLoan.getLoanAmount(),
+                savedLoan.getInterestRate(),
+                savedLoan.getNumberOfPayments(),
+                savedLoan.getInsuranceCost(),
+                savedLoan.getTaeg(),
+                calculationTime
+        );
+    }
+
+    @Override
+    public List<LoanResponse> getLoansByAmountRange(double minAmount, double maxAmount) {
+        List<Loan> loans = loanRepository.findByLoanAmountBetween(minAmount, maxAmount);
+
+        return loans.stream().map(loan -> {
+            CalculationTime calculationTime = new CalculationTime(
+                    loan.getCalculationTime().format(DATE_FORMATTER),
+                    loan.getCalculationTime().format(TIME_FORMATTER)
+            );
+
+            return new LoanResponse(
+                    loan.getId(),
+                    loan.getLoanAmount(),
+                    loan.getInterestRate(),
+                    loan.getNumberOfPayments(),
+                    loan.getInsuranceCost(),
+                    loan.getTaeg(),
+                    calculationTime
+            );
+        }).toList();
+    }
+    
+    private double calculateTAEG(Loan loan) {
+        double denominator = loan.getLoanAmount() + loan.getInsuranceCost();
+        return denominator > 0
+                ? (loan.getInterestRate() * loan.getNumberOfPayments()) / denominator * 100
+                : 0;
     }
 }

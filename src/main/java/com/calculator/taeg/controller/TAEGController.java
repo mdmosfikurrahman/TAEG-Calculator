@@ -2,17 +2,14 @@ package com.calculator.taeg.controller;
 
 import com.calculator.taeg.dto.LoanRequest;
 import com.calculator.taeg.dto.LoanResponse;
+import com.calculator.taeg.dto.RestResponse;
+import com.calculator.taeg.dto.ValidationError;
 import com.calculator.taeg.service.TAEGService;
-import com.calculator.taeg.validator.LoanRequestValidator;
+import com.calculator.taeg.service.TAEGValidationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,18 +17,33 @@ import org.springframework.web.bind.annotation.RestController;
 public class TAEGController {
 
     private final TAEGService taegService;
-    private final LoanRequestValidator loanRequestValidator;
+    private final TAEGValidationService validationService;
 
     @PostMapping("/calculate")
-    public ResponseEntity<?> calculateTAEG(@RequestBody LoanRequest loanRequest) {
-        BindingResult result = new BeanPropertyBindingResult(loanRequest, "loanRequest");
-        loanRequestValidator.validate(loanRequest, result);
+    public RestResponse<?> calculateTAEG(@RequestBody LoanRequest loanRequest) {
+        List<ValidationError> errors = validationService.validateLoanRequest(loanRequest);
 
-        if (result.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors());
+        if (!errors.isEmpty()) {
+            return new RestResponse<>(400, "Validation Failed", errors);
         }
 
         LoanResponse response = taegService.calculateTAEG(loanRequest);
-        return ResponseEntity.ok(response);
+        return new RestResponse<>(200, "Successful", response);
     }
+
+    @GetMapping("/loans")
+    public RestResponse<?> getLoansByAmountRange(
+            @RequestParam double minAmount,
+            @RequestParam double maxAmount) {
+
+        List<ValidationError> errors = validationService.validateAmountRange(minAmount, maxAmount);
+
+        if (!errors.isEmpty()) {
+            return new RestResponse<>(400, "Invalid range parameters", errors);
+        }
+
+        List<LoanResponse> loans = taegService.getLoansByAmountRange(minAmount, maxAmount);
+        return new RestResponse<>(200, "Successful", loans);
+    }
+
 }
