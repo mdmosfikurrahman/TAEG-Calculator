@@ -31,7 +31,7 @@ public class TAEGRestController {
         return new RestResponse<>(200, "Successful", response);
     }
 
-    @GetMapping("/loans")
+    @GetMapping("/loan")
     public RestResponse<?> getLoansByAmountRange(
             @RequestParam double minAmount,
             @RequestParam double maxAmount) {
