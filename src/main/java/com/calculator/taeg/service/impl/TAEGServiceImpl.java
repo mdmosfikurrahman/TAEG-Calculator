@@ -24,56 +24,61 @@ public class TAEGServiceImpl implements TAEGService {
 
     @Override
     public LoanResponse calculateTAEG(LoanRequest loanRequest) {
-        Loan loan = new Loan();
-        loan.setLoanAmount(loanRequest.getLoanAmount());
-        loan.setInterestRate(loanRequest.getInterestRate());
-        loan.setNumberOfPayments(loanRequest.getNumberOfPayments());
-        loan.setInsuranceCost(loanRequest.getInsuranceCost());
-        loan.setTaeg(calculateTAEG(loan));
-        loan.setCalculationTime(LocalDateTime.now());
+        Loan loan = mapToLoanEntity(loanRequest);
         Loan savedLoan = loanRepository.save(loan);
-        CalculationTimeResponse calculationTimeResponse = new CalculationTimeResponse(
-                savedLoan.getCalculationTime().format(DATE_FORMATTER),
-                savedLoan.getCalculationTime().format(TIME_FORMATTER)
-        );
-
-        return new LoanResponse(
-                savedLoan.getId(),
-                savedLoan.getLoanAmount(),
-                savedLoan.getInterestRate(),
-                savedLoan.getNumberOfPayments(),
-                savedLoan.getInsuranceCost(),
-                savedLoan.getTaeg(),
-                calculationTimeResponse
-        );
+        return mapToLoanResponse(savedLoan);
     }
 
     @Override
     public List<LoanResponse> getLoansByAmountRange(double minAmount, double maxAmount) {
         List<Loan> loans = loanRepository.findByLoanAmountBetween(minAmount, maxAmount);
-
-        return loans.stream().map(loan -> {
-            CalculationTimeResponse calculationTimeResponse = new CalculationTimeResponse(
-                    loan.getCalculationTime().format(DATE_FORMATTER),
-                    loan.getCalculationTime().format(TIME_FORMATTER)
-            );
-
-            return new LoanResponse(
-                    loan.getId(),
-                    loan.getLoanAmount(),
-                    loan.getInterestRate(),
-                    loan.getNumberOfPayments(),
-                    loan.getInsuranceCost(),
-                    loan.getTaeg(),
-                    calculationTimeResponse
-            );
-        }).toList();
+        return loans.stream().map(this::mapToLoanResponse).toList();
     }
-    
-    private double calculateTAEG(Loan loan) {
-        double denominator = loan.getLoanAmount() + loan.getInsuranceCost();
+
+    @Override
+    public List<LoanResponse> getAllLoanInformation() {
+        List<Loan> loans = loanRepository.findAll();
+        return loans.stream().map(this::mapToLoanResponse).toList();
+    }
+
+    private Loan mapToLoanEntity(LoanRequest loanRequest) {
+        return Loan.builder()
+                .loanAmount(loanRequest.getLoanAmount())
+                .interestRate(loanRequest.getInterestRate())
+                .numberOfPayments(loanRequest.getNumberOfPayments())
+                .insuranceCost(loanRequest.getInsuranceCost())
+                .taeg(
+                        calculateTAEG(
+                                loanRequest.getLoanAmount(),
+                                loanRequest.getInterestRate(),
+                                loanRequest.getNumberOfPayments(),
+                                loanRequest.getInsuranceCost()
+                        ))
+                .calculationTime(LocalDateTime.now())
+                .build();
+    }
+
+    private LoanResponse mapToLoanResponse(Loan loan) {
+        CalculationTimeResponse calculationTimeResponse = CalculationTimeResponse.builder()
+                .date(loan.getCalculationTime().format(DATE_FORMATTER))
+                .time(loan.getCalculationTime().format(TIME_FORMATTER))
+                .build();
+
+        return LoanResponse.builder()
+                .loanId(loan.getId())
+                .loanAmount(loan.getLoanAmount())
+                .interestRate(loan.getInterestRate())
+                .numberOfPayments(loan.getNumberOfPayments())
+                .insuranceCost(loan.getInsuranceCost())
+                .taeg(loan.getTaeg())
+                .calculationTimeResponse(calculationTimeResponse)
+                .build();
+    }
+
+    private double calculateTAEG(double loanAmount, double interestRate, int numberOfPayments, double insuranceCost) {
+        double denominator = loanAmount + insuranceCost;
         return denominator > 0
-                ? (loan.getInterestRate() * loan.getNumberOfPayments()) / denominator * 100
+                ? (interestRate * numberOfPayments) / denominator * 100
                 : 0;
     }
 }

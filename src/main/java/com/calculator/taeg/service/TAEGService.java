@@ -11,4 +11,5 @@ public interface TAEGService {
 
     List<LoanResponse> getLoansByAmountRange(double minAmount, double maxAmount);
 
+    List<LoanResponse> getAllLoanInformation();
 }

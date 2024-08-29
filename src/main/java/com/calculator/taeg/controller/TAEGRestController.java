@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/taeg")
-public class TAEGController {
+public class TAEGRestController {
 
     private final TAEGService taegService;
     private final TAEGValidationService validationService;
@@ -43,6 +43,12 @@ public class TAEGController {
         }
 
         List<LoanResponse> loans = taegService.getLoansByAmountRange(minAmount, maxAmount);
+        return new RestResponse<>(200, "Successful", loans);
+    }
+
+    @GetMapping("/loans")
+    public RestResponse<?> getAllLoanInformation() {
+        List<LoanResponse> loans = taegService.getAllLoanInformation();
         return new RestResponse<>(200, "Successful", loans);
     }
 

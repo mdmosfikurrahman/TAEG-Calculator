@@ -1,10 +1,10 @@
 package com.calculator.taeg.dto;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+@Builder
 public class LoanResponse {
 
     private Long loanId;
