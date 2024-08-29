@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CalculationTimeResponse {
+public class TimeOfCalculation {
 
     private String date;
     private String time;

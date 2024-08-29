@@ -1,11 +1,11 @@
 package com.calculator.taeg.controller;
 
+import com.calculator.taeg.dto.LoanDetails;
 import com.calculator.taeg.dto.LoanRequest;
-import com.calculator.taeg.dto.LoanResponse;
 import com.calculator.taeg.dto.RestResponse;
 import com.calculator.taeg.dto.ValidationError;
-import com.calculator.taeg.service.TAEGService;
-import com.calculator.taeg.service.TAEGValidationService;
+import com.calculator.taeg.service.LoanService;
+import com.calculator.taeg.service.LoanRequestValidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +16,8 @@ import java.util.List;
 @RequestMapping("/api/taeg")
 public class TAEGRestController {
 
-    private final TAEGService taegService;
-    private final TAEGValidationService validationService;
+    private final LoanService loanService;
+    private final LoanRequestValidationService validationService;
 
     @PostMapping("/calculate")
     public RestResponse<?> calculateTAEG(@RequestBody LoanRequest loanRequest) {
@@ -27,7 +27,7 @@ public class TAEGRestController {
             return new RestResponse<>(400, "Validation Failed", errors);
         }
 
-        LoanResponse response = taegService.calculateTAEG(loanRequest);
+        LoanDetails response = loanService.calculateLoanDetails(loanRequest);
         return new RestResponse<>(200, "Successful", response);
     }
 
@@ -42,13 +42,13 @@ public class TAEGRestController {
             return new RestResponse<>(400, "Invalid range parameters", errors);
         }
 
-        List<LoanResponse> loans = taegService.getLoansByAmountRange(minAmount, maxAmount);
+        List<LoanDetails> loans = loanService.getLoansWithinRange(minAmount, maxAmount);
         return new RestResponse<>(200, "Successful", loans);
     }
 
     @GetMapping("/loans")
     public RestResponse<?> getAllLoanInformation() {
-        List<LoanResponse> loans = taegService.getAllLoanInformation();
+        List<LoanDetails> loans = loanService.getAllLoanDetails();
         return new RestResponse<>(200, "Successful", loans);
     }
 

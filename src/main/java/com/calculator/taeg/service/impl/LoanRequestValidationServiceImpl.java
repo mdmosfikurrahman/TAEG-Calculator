@@ -2,14 +2,14 @@ package com.calculator.taeg.service.impl;
 
 import com.calculator.taeg.dto.LoanRequest;
 import com.calculator.taeg.dto.ValidationError;
-import com.calculator.taeg.service.TAEGValidationService;
+import com.calculator.taeg.service.LoanRequestValidationService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class TAEGValidationServiceImpl implements TAEGValidationService {
+public class LoanRequestValidationServiceImpl implements LoanRequestValidationService {
 
     @Override
     public List<ValidationError> validateLoanRequest(LoanRequest loanRequest) {

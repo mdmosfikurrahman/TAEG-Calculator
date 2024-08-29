@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
-    List<Loan> findByLoanAmountBetween(Double minAmount, Double maxAmount);
+    List<Loan> findByAmountBetween(Double minAmount, Double maxAmount);
 
 }

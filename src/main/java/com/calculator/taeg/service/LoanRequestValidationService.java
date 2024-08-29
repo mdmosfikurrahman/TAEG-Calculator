@@ -5,7 +5,7 @@ import com.calculator.taeg.dto.ValidationError;
 
 import java.util.List;
 
-public interface TAEGValidationService {
+public interface LoanRequestValidationService {
 
 
     List<ValidationError> validateLoanRequest(LoanRequest loanRequestDTO);

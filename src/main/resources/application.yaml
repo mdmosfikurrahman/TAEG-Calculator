@@ -2,9 +2,9 @@ spring:
   application:
     name: TAEG-Sevice
   datasource:
-    url: jdbc:mysql://sql.freedb.tech:3306/freedb_cluster_lambda
-    username: freedb_lambda
-    password: xn!UFZ?#Q39HnWp
+    url: jdbc:mysql://127.0.0.1:3306/MultiDataHub
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
